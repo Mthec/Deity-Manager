@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="jar" name="Deity Manager">
+    <target name="jar">
+        <jar destfile="../out/jar/mods/deitymanager/deitymanager.jar">
+            <fileset dir="../out/production/Deity-Manager" includes="mod/" />
+        </jar>
+        <copy file="deitymanager.properties" tofile="../out/jar/mods/deitymanager.properties" />
+        <copy file="locales/DeityManager.properties" tofile="../out/jar/locales/DeityManager.properties" />
+        <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
+            <fileset dir="../out/jar" />
+        </copy>
+    </target>
+    <target name="zip" depends="jar">
+        <zip destfile="../deitymanager.zip">
+            <zipfileset dir="../out/jar" />
+        </zip>
+    </target>
+</project>

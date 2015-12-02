@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+
+<SplitPane dividerPositions="0.3" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mod.wurmonline.mods.deitymanager.DeityManager">
+   <items>
+      <ListView fx:id="deitiesList" prefHeight="200.0" prefWidth="200.0" />
+      <VBox>
+         <children>
+            <ScrollPane fx:id="deityProperties" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+            <HBox minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="NEVER">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#initialize" text="%button.refresh" />
+                  <Button mnemonicParsing="false" onAction="#saveDeity" text="%button.save" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </items>
+</SplitPane>
