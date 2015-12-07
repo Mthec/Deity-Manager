@@ -3,6 +3,7 @@
     <target name="jar">
         <jar destfile="../out/jar/mods/deitymanager/deitymanager.jar">
             <fileset dir="../out/production/Deity-Manager" includes="mod/" />
+            <zipfileset file="../out/production/Deity-Manager/com/wurmonline/server/DbConnector$WurmDatabaseSchema.class" prefix="mod/wurmonline/mods/deitymanager" />
         </jar>
         <copy file="deitymanager.properties" tofile="../out/jar/mods/deitymanager.properties" />
         <copy file="locales/DeityManager.properties" tofile="../out/jar/locales/DeityManager.properties" />

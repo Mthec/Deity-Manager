@@ -1,5 +1,7 @@
 package mod.wurmonline.mods.deitymanager;
 
+import com.ibm.icu.text.MessageFormat;
+import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.deities.Deity;
 import com.wurmonline.server.spells.Spell;
@@ -16,10 +18,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import javassist.*;
-import com.ibm.icu.text.MessageFormat;
-import mod.wurmonline.serverlauncher.gui.ServerGuiController;
 import mod.wurmonline.serverlauncher.LocaleHelper;
+import mod.wurmonline.serverlauncher.gui.ServerGuiController;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
@@ -68,7 +70,7 @@ public class DeityManager implements WurmMod, WurmUIMod, PreInitable, ServerStar
 
     @Override
     public void preInit() {
-        ClassPool pool = ClassPool.getDefault();
+        ClassPool pool = HookManager.getInstance().getClassPool();
         try {
 
             CtClass deity = pool.get("com.wurmonline.server.deities.Deity");
@@ -107,45 +109,43 @@ public class DeityManager implements WurmMod, WurmUIMod, PreInitable, ServerStar
 
         try {
             CtClass dbConnector = pool.get("com.wurmonline.server.DbConnector");
-            CtField db = new CtField(pool.get("java.lang.String"), "spellDb", dbConnector);
-            db.setModifiers(Modifier.STATIC);
-            dbConnector.addField(db, CtField.Initializer.constant("WURMSPELLS"));
-            CtField con = new CtField(pool.get("java.sql.Connection"), "spellDbcon", dbConnector);
-            con.setModifiers(Modifier.STATIC);
-            dbConnector.addField(con, "null");
-            CtField lastUsed = new CtField(CtClass.longType, "spellLastUsed", dbConnector);
-            lastUsed.setModifiers(Modifier.STATIC);
-            dbConnector.addField(lastUsed, "System.currentTimeMillis()");
 
-            CtMethod method = CtNewMethod.make("public static final java.sql.Connection getSpellDbCon () throws java.sql.SQLException {" +
-                    "if (!isInitialized()) {" +
-                    "    initialize();" +
-                    "}" +
-                    "spellDbcon = refreshDbConnection(spellDbcon, spellLastUsed, dbDriver, dbHost, spellDb, dbUser, dbPass, \"spellDbcon\");" +
-                    "spellLastUsed = System.currentTimeMillis();" +
-                    "return spellDbcon;}", dbConnector);
+            pool.get("com.wurmonline.server.DbConnector$WurmDatabaseSchema").detach();
+            pool.makeClass(DeityManager.class.getResourceAsStream("DbConnector$WurmDatabaseSchema.class"));
+            dbConnector.rebuildClassFile();
+
+            dbConnector.getDeclaredMethod("initialize").insertAfter(
+                    "final String dbUser = com.wurmonline.server.Constants.dbUser;" +
+                    "final String dbPass = com.wurmonline.server.Constants.dbPass;" +
+                    "String dbHost;" +
+                    "String dbDriver;" +
+                    "if(isSqlite()) {" +
+                    "    dbHost = com.wurmonline.server.Constants.dbHost;" +
+                    "    config.setJournalMode(org.sqlite.SQLiteConfig.JournalMode.WAL);" +
+                    "    config.setSynchronous(org.sqlite.SQLiteConfig.SynchronousMode.NORMAL);" +
+                    "    dbDriver = \"org.sqlite.JDBC\";" +
+                    "    } else {" +
+                    "    dbHost = com.wurmonline.server.Constants.dbHost + com.wurmonline.server.Constants.dbPort;" +
+                    "    dbDriver = com.wurmonline.server.Constants.dbDriver;" +
+                    "    }" +
+                    "CONNECTORS.put(com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS, new com.wurmonline.server.DbConnector(" +
+                    "dbDriver, dbHost, com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS.getDatabase(), dbUser, dbPass, \"spellsDbcon\"));");
+
+            CtMethod method = CtNewMethod.make("public static final java.sql.Connection getSpellsDbCon() throws java.sql.SQLException {" +
+                    "return refreshConnectionForSchema(com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS);}", dbConnector);
             dbConnector.addMethod(method);
-        } catch (NotFoundException | CannotCompileException ex) {
+            dbConnector.writeFile();
+
+        } catch (NotFoundException | CannotCompileException | IOException ex) {
             logger.warning(messages.getString("dbconnector_error"));
             ex.printStackTrace();
             System.exit(-1);
         }
-
-        try {
-            CtClass dbConnector = pool.get("com.wurmonline.server.DbConnector");
-            CtMethod closeAll = dbConnector.getDeclaredMethod("closeAll");
-            closeAll.insertAfter("{ attemptClose(spellDbcon, \"spellDbcon\"); spellDbcon = null; }");
-            dbConnector.writeFile();
-        } catch (NotFoundException | CannotCompileException | IOException ex) {
-            logger.warning(messages.getString("closeall_error"));
-            ex.printStackTrace();
-            System.exit(-1);
-        }
-        // TODO - Do I need to do getConnectionForSchema, WurmDatabaseSchema enum?
     }
 
     @Override
     public void onServerStarted () {
+        ServerDirInfo.getFileDBPath();
         try {
             if (deities.length == 0) {
                 DeityDBInterface.loadAllData();
@@ -216,12 +216,14 @@ public class DeityManager implements WurmMod, WurmUIMod, PreInitable, ServerStar
     void deitiesListChanged () {
         if (!rebuilding) {
             DeityData selectedDeity = deitiesList.getSelectionModel().getSelectedItem();
-            lastSelectedDeity = selectedDeity.getNumber();
-            String name = selectedDeity.getName();
-            logger.info(MessageFormat.format(messages.getString("selecting"), name));
-            deityPropertySheet = new DeityPropertySheet(selectedDeity, Spells.getAllSpells(), controller.serverIsRunning());
-            deityProperties.setContent(deityPropertySheet);
-            deityPropertySheet.requestFocus();
+            if (selectedDeity != null) {
+                lastSelectedDeity = selectedDeity.getNumber();
+                String name = selectedDeity.getName();
+                logger.info(MessageFormat.format(messages.getString("selecting"), name));
+                deityPropertySheet = new DeityPropertySheet(selectedDeity, Spells.getAllSpells(), controller.serverIsRunning());
+                deityProperties.setContent(deityPropertySheet);
+                deityPropertySheet.requestFocus();
+            }
         }
     }
 

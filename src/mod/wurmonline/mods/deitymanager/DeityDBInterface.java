@@ -50,13 +50,13 @@ public class DeityDBInterface {
             deityCon = DbConnector.getDeityDbCon();
             deityPS = deityCon.prepareStatement(GET_ALL_DEITIES);
             drs = deityPS.executeQuery();
-            Method getSpellDbCon = ReflectionUtil.getMethod(DbConnector.class, "getSpellDbCon");
+            Method getSpellsDbCon = ReflectionUtil.getMethod(DbConnector.class, "getSpellsDbCon");
             Spell[] allSpells = Spells.getAllSpells();
             if (allSpells.length == 0) {
                 SpellGenerator.createSpells();
                 allSpells = Spells.getAllSpells();
             }
-            spellCon = (Connection)getSpellDbCon.invoke(DbConnector.class);
+            spellCon = (Connection)getSpellsDbCon.invoke(DbConnector.class);
             if (!spellCon.getMetaData().getTables(null, null, "DEITY_SPELLS", null).next()) {
                 Statement create = spellCon.createStatement();
                 create.executeUpdate("CREATE TABLE DEITY_SPELLS\n" +
@@ -139,8 +139,8 @@ public class DeityDBInterface {
             deityPS.executeUpdate();
 
             // Spells
-            Method getSpellDbCon = ReflectionUtil.getMethod(DbConnector.class, "getSpellDbCon");
-            spellCon = (Connection)getSpellDbCon.invoke(DbConnector.class);
+            Method getSpellsDbCon = ReflectionUtil.getMethod(DbConnector.class, "getSpellsDbCon");
+            spellCon = (Connection)getSpellsDbCon.invoke(DbConnector.class);
             boolean autoCommit = spellCon.getAutoCommit();
             spellCon.setAutoCommit(false);
             spellPS = spellCon.prepareStatement(SAVE_DEITY_SPELL);
