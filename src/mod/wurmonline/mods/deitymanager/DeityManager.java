@@ -100,8 +100,7 @@ public class DeityManager implements WurmMod, WurmUIMod, PreInitable, ServerStar
             CtClass spellGenerator = pool.get("com.wurmonline.server.spells.SpellGenerator");
             CtMethod createSpells = spellGenerator.getDeclaredMethod("createSpells");
             createSpells.insertBefore("{ if (com.wurmonline.server.spells.Spells.getAllSpells().length != 0) { return; } }");
-            spellGenerator.writeFile();
-        } catch (NotFoundException | CannotCompileException | IOException ex) {
+        } catch (NotFoundException | CannotCompileException ex) {
             logger.warning(messages.getString("spell_generator_error"));
             ex.printStackTrace();
             System.exit(-1);
@@ -134,7 +133,6 @@ public class DeityManager implements WurmMod, WurmUIMod, PreInitable, ServerStar
             CtMethod method = CtNewMethod.make("public static final java.sql.Connection getSpellsDbCon() throws java.sql.SQLException {" +
                     "return refreshConnectionForSchema(com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS);}", dbConnector);
             dbConnector.addMethod(method);
-            dbConnector.writeFile();
 
         } catch (NotFoundException | CannotCompileException | IOException ex) {
             logger.warning(messages.getString("dbconnector_error"));
