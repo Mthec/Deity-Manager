@@ -5,6 +5,7 @@
 package mod.wurmonline.mods.deitymanager;
 
 import com.ibm.icu.text.MessageFormat;
+import com.wurmonline.server.Constants;
 import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.deities.Deity;
@@ -43,6 +44,7 @@ public class DeityDBInterface {
         ResultSet drs = null;
         ResultSet srs = null;
 
+        Constants.dbHost = "Adventure_test";
         DbConnector.initialize();
 
         try {
@@ -99,7 +101,7 @@ public class DeityDBInterface {
                 DeityDBInterface.deityData.put(deityName, deity);
             }
         } catch (SQLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            logger.log(Level.WARNING, messages.getString("failed_to_load"), ex);
+            logger.log(Level.WARNING, "temp", ex);//messages.getString("failed_to_load"), ex);
         } finally {
             DbUtilities.closeDatabaseObjects(deityPS, drs);
             DbUtilities.closeDatabaseObjects(spellPS, srs);

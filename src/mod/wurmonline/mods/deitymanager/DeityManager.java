@@ -6,14 +6,17 @@ import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.deities.Deity;
 import com.wurmonline.server.spells.Spell;
 import com.wurmonline.server.spells.Spells;
+import javafx.stage.Stage;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+import org.gotti.wurmunlimited.modloader.classhooks.InvocationHandlerFactory;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmServerMod;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ResourceBundle;
@@ -65,34 +68,42 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
         try {
             CtClass dbConnector = pool.get("com.wurmonline.server.DbConnector");
 
-            pool.get("com.wurmonline.server.DbConnector$WurmDatabaseSchema").detach();
-            pool.makeClass(DeityManager.class.getResourceAsStream("DbConnector$WurmDatabaseSchema.class"));
-            dbConnector.rebuildClassFile();
+            pool.get("com.wurmonline.server.database.WurmDatabaseSchema").detach();
+            // TODO - Top one doesn't work locally.
+            pool.makeClass(DeityManager.class.getResourceAsStream("WurmDatabaseSchema.class"));
+            //pool.makeClass(Files.newOutputStream(Paths.get("../com.wurmonline.server.database.WurmDatabaseSchema.class")).toString());
 
-            dbConnector.getDeclaredMethod("initialize").insertAfter(
-                    "final String dbUser = com.wurmonline.server.Constants.dbUser;" +
-                    "final String dbPass = com.wurmonline.server.Constants.dbPass;" +
-                    "String dbHost;" +
-                    "String dbDriver;" +
-                    "if(isSqlite()) {" +
-                    "    dbHost = com.wurmonline.server.Constants.dbHost;" +
-                    "    config.setJournalMode(org.sqlite.SQLiteConfig.JournalMode.WAL);" +
-                    "    config.setSynchronous(org.sqlite.SQLiteConfig.SynchronousMode.NORMAL);" +
-                    "    dbDriver = \"org.sqlite.JDBC\";" +
-                    "    } else {" +
-                    "    dbHost = com.wurmonline.server.Constants.dbHost + com.wurmonline.server.Constants.dbPort;" +
-                    "    dbDriver = com.wurmonline.server.Constants.dbDriver;" +
-                    "    }" +
-                    "CONNECTORS.put(com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS, new com.wurmonline.server.DbConnector(" +
-                    "dbDriver, dbHost, com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS.getDatabase(), dbUser, dbPass, \"spellsDbcon\"));");
+            CtClass helper = pool.get("com.wurmonline.server.DbConnector$ConfigHelper");
 
-            CtMethod method = CtNewMethod.make("public static final java.sql.Connection getSpellsDbCon() throws java.sql.SQLException {" +
-                    "return refreshConnectionForSchema(com.wurmonline.server.DbConnector.WurmDatabaseSchema.SPELLS);}", dbConnector);
+            helper.getDeclaredMethod("buildConnectors").insertAfter(
+                            "$_.put(com.wurmonline.server.database.WurmDatabaseSchema.SPELLS, " +
+                            "new com.wurmonline.server.DbConnector(this.factoryForSchema(com.wurmonline.server.database.WurmDatabaseSchema.SPELLS), \"spellsDbcon\"));");
+
+            CtMethod method = CtNewMethod.make("public static java.sql.Connection getSpellsDbCon() throws java.sql.SQLException {" +
+                    "return refreshConnectionForSchema(com.wurmonline.server.database.WurmDatabaseSchema.SPELLS);}", dbConnector);
             dbConnector.addMethod(method);
 
+            HookManager.getInstance().registerHook("com.wurmonline.server.gui.WurmServerGuiMain", "start", "(Ljavafx/stage/Stage;)V", new InvocationHandlerFactory() {
+                @Override
+                public InvocationHandler createInvocationHandler() {
+                    return new InvocationHandler() {
+                        @Override
+                        public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+                            method.invoke(o, objects);
+                            Stage stage = new Stage();
+                            DeityManagerWindow controller = new DeityManagerWindow();
+                            controller.start();
+
+                            controller.stage.show();
+                            return null;
+                        }
+                    };
+                }
+            });
+
         } catch (NotFoundException | CannotCompileException | IOException ex) {
-            logger.warning(messages.getString("dbconnector_error"));
             ex.printStackTrace();
+            logger.warning(messages.getString("dbconnector_error"));
             System.exit(-1);
         }
     }

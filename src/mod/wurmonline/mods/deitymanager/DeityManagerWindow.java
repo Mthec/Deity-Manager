@@ -16,14 +16,13 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DeityManagerWindow extends Application {
+public class DeityManagerWindow {
 
     private static Logger logger = Logger.getLogger(DeityManagerWindow.class.getName());
     private DeityPropertySheet deityPropertySheet;
@@ -32,6 +31,7 @@ public class DeityManagerWindow extends Application {
     private int lastSelectedDeity;
     private String lastSelectedServer;
     private boolean rebuilding = false;
+    public Stage stage;
 
     private List<String> servers = new ArrayList<>();
 
@@ -45,22 +45,19 @@ public class DeityManagerWindow extends Application {
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
     //private ResourceBundle messages = ResourceBundle.getBundle("locales/DeityManager", Locale.getDefault());
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
+    public void start() {
         messages.getString("button.refresh");
         try {
             FXMLLoader fx = new FXMLLoader(DeityManagerWindow.class.getResource("DeityManager.fxml"), messages);
+            fx.setController(this);
             SplitPane pane = fx.load();
-            DeityManagerWindow win = fx.getController();
-            win.initialize();
+
+            this.initialize();
 
             Scene scene = new Scene(pane);
-            primaryStage.setScene(scene);
-            primaryStage.show();
+            stage = new Stage();
+            stage.setScene(scene);
+            //stage.show();
 
         } catch (IOException ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
