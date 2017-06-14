@@ -17,8 +17,8 @@
             <ScrollPane fx:id="deityProperties" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
             <HBox minHeight="-Infinity" minWidth="-Infinity" VBox.vgrow="NEVER">
                <children>
-                  <Button mnemonicParsing="false" text="%button.refresh" />
-                  <Button mnemonicParsing="false" text="%button.save" />
+                  <Button mnemonicParsing="false" fx:id="refreshButton" text="%button.refresh" />
+                  <Button mnemonicParsing="false" fx:id="saveButton" text="%button.save" />
                </children>
             </HBox>
          </children>

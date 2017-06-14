@@ -6,7 +6,6 @@ import com.wurmonline.server.deities.Deities;
 import com.wurmonline.server.deities.Deity;
 import com.wurmonline.server.spells.Spell;
 import com.wurmonline.server.spells.Spells;
-import javafx.stage.Stage;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -90,11 +89,8 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
                         @Override
                         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
                             method.invoke(o, objects);
-                            Stage stage = new Stage();
                             DeityManagerWindow controller = new DeityManagerWindow();
                             controller.start();
-
-                            controller.stage.show();
                             return null;
                         }
                     };

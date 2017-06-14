@@ -2,6 +2,7 @@ package mod.wurmonline.mods.deitymanager;
 
 import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.spells.Spell;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,7 +15,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DeityPropertySheet extends VBox {
+class DeityPropertySheet extends VBox {
     private static Logger logger = Logger.getLogger(DeityPropertySheet.class.getName());
     private DeityData currentDeity;
     private ObservableList<PropertySheet.Item> list;
@@ -22,7 +23,7 @@ public class DeityPropertySheet extends VBox {
     private Map<String, Spell> stored_spells = new HashMap<>();
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
 
-    public DeityPropertySheet(DeityData deity, Spell[] allSpells, boolean serverRunning) {
+    DeityPropertySheet(DeityData deity, Spell[] allSpells, boolean serverRunning) {
         currentDeity = deity;
         list = FXCollections.observableArrayList();
         String deity_category = messages.getString("deity_category");
@@ -36,6 +37,7 @@ public class DeityPropertySheet extends VBox {
         list.add(new deityItem(DeityPropertyType.FAVOR, deity_category, messages.getString("favor"), messages.getString("favor_description"), true, deity.getFavor()));
         list.add(new deityItem(DeityPropertyType.ATTACK, deity_category, messages.getString("attack"), messages.getString("attack_description"), true, deity.getAttack()));
         list.add(new deityItem(DeityPropertyType.VITALITY, deity_category, messages.getString("vitality"), messages.getString("vitality_description"), true, deity.getVitality()));
+
 
         // Spells
         stored_spells.clear();
@@ -55,11 +57,11 @@ public class DeityPropertySheet extends VBox {
         this.getChildren().add(propertySheet);
     }
 
-    public DeityData getCurrentData() {
+    DeityData getCurrentData() {
         return currentDeity;
     }
 
-    public final String save() {
+    final String save() {
         String toReturn = "";
         boolean saveAtAll = false;
 
@@ -152,11 +154,11 @@ public class DeityPropertySheet extends VBox {
         return toReturn;
     }
 
-    public boolean haveChanges () {
+    boolean haveChanges() {
         return changedProperties.size() > 0;
     }
 
-    class deityItem implements PropertySheet.Item {
+    private class deityItem implements PropertySheet.Item {
         private DeityPropertyType type;
         private String category;
         private String name;
@@ -173,7 +175,7 @@ public class DeityPropertySheet extends VBox {
             value = aValue;
         }
 
-        public DeityPropertyType getPropertyType() {
+        DeityPropertyType getPropertyType() {
             return type;
         }
 
@@ -211,7 +213,8 @@ public class DeityPropertySheet extends VBox {
 
         @Override
         public Optional<ObservableValue<?>> getObservableValue() {
-            return null;
+            // TODO - Why does this work?
+            return Optional.of(new SimpleBooleanProperty(true));
         }
     }
 
@@ -231,7 +234,7 @@ public class DeityPropertySheet extends VBox {
         }
     }
 
-    class SpellItem implements PropertySheet.Item {
+    private class SpellItem implements PropertySheet.Item {
         private SpellPropertyType type;
         private String category;
         private String name;
@@ -285,7 +288,8 @@ public class DeityPropertySheet extends VBox {
 
         @Override
         public Optional<ObservableValue<? extends Object>> getObservableValue() {
-            return null;
+            // TODO - Why does this work?
+            return Optional.of(new SimpleBooleanProperty(true));
         }
     }
 

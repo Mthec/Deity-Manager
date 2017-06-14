@@ -4,6 +4,7 @@ import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.spells.Spells;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -42,6 +43,12 @@ public class DeityManagerWindow {
     @FXML
     ComboBox<String> serverSelector;
 
+    @FXML
+    Button refreshButton;
+
+    @FXML
+    Button saveButton;
+
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
     //private ResourceBundle messages = ResourceBundle.getBundle("locales/DeityManager", Locale.getDefault());
 
@@ -57,7 +64,11 @@ public class DeityManagerWindow {
             Scene scene = new Scene(pane);
             stage = new Stage();
             stage.setScene(scene);
-            //stage.show();
+
+            refreshButton.setOnAction(event -> initialize());
+            saveButton.setOnAction(event -> saveDeity());
+
+            stage.show();
 
         } catch (IOException ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);

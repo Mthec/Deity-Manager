@@ -5,8 +5,8 @@
             <fileset dir="../out/production/Deity-Manager" includes="mod/" />
             <zipfileset file="../out/production/Deity-Manager/com/wurmonline/server/database/WurmDatabaseSchema.class" prefix="mod/wurmonline/mods/deitymanager" />
             <manifest>
-                <attribute name="Main-Class" value="mod.wurmonline.mods.deitymanager.DeityManagerWindow"/>
-                <attribute name="Class-Path" value="../../modlauncher.jar"/>
+                <attribute name="Main-Class" value="mod.wurmonline.mods.deitymanager.DeityManager"/>
+                <attribute name="Class-Path" value="../../modlauncher.jar:icu4j-56_1.jar"/>
             </manifest>
         </jar>
         <copy file="deitymanager.properties" tofile="../out/jar/mods/deitymanager.properties" />
