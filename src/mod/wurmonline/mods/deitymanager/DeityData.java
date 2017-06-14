@@ -11,7 +11,7 @@ import javafx.beans.property.StringProperty;
 import java.sql.SQLException;
 import java.util.Set;
 
-public class DeityData implements MiscConstants {
+public class DeityData {
     private String name;
     private int number;
     private int align;

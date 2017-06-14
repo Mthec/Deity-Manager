@@ -1,8 +1,8 @@
 package mod.wurmonline.mods.deitymanager;
 
 import com.ibm.icu.text.MessageFormat;
-import com.wurmonline.server.MiscConstants;
 import com.wurmonline.server.spells.Spell;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DeityPropertySheet extends VBox implements MiscConstants {
+public class DeityPropertySheet extends VBox {
     private static Logger logger = Logger.getLogger(DeityPropertySheet.class.getName());
     private DeityData currentDeity;
     private ObservableList<PropertySheet.Item> list;
@@ -209,6 +209,11 @@ public class DeityPropertySheet extends VBox implements MiscConstants {
 
             value = aValue;
         }
+
+        @Override
+        public Optional<ObservableValue<?>> getObservableValue() {
+            return null;
+        }
     }
 
     private enum DeityPropertyType {
@@ -277,6 +282,11 @@ public class DeityPropertySheet extends VBox implements MiscConstants {
                 changedProperties.add(type);
             }
             value = aValue;
+        }
+
+        @Override
+        public Optional<ObservableValue<? extends Object>> getObservableValue() {
+            return null;
         }
     }
 

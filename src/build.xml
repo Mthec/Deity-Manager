@@ -4,10 +4,14 @@
         <jar destfile="../out/jar/mods/deitymanager/deitymanager.jar">
             <fileset dir="../out/production/Deity-Manager" includes="mod/" />
             <zipfileset file="../out/production/Deity-Manager/com/wurmonline/server/DbConnector$WurmDatabaseSchema.class" prefix="mod/wurmonline/mods/deitymanager" />
+            <manifest>
+                <attribute name="Main-Class" value="mod.wurmonline.mods.deitymanager.DeityManagerWindow"/>
+                <attribute name="Class-Path" value="../../server.jar"/>
+            </manifest>
         </jar>
         <copy file="deitymanager.properties" tofile="../out/jar/mods/deitymanager.properties" />
         <copy file="locales/DeityManager.properties" tofile="../out/jar/locales/DeityManager.properties" />
-        <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
+        <copy todir="E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
             <fileset dir="../out/jar" />
         </copy>
     </target>

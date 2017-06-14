@@ -12,7 +12,6 @@ import com.wurmonline.server.spells.Spell;
 import com.wurmonline.server.spells.SpellGenerator;
 import com.wurmonline.server.spells.Spells;
 import com.wurmonline.server.utils.DbUtilities;
-import mod.wurmonline.serverlauncher.LocaleHelper;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,6 +42,8 @@ public class DeityDBInterface {
         PreparedStatement spellPS = null;
         ResultSet drs = null;
         ResultSet srs = null;
+
+        DbConnector.initialize();
 
         try {
             deityCon = DbConnector.getDeityDbCon();

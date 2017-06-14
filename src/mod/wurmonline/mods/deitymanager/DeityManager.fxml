@@ -4,9 +4,14 @@
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 
-<SplitPane dividerPositions="0.3" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mod.wurmonline.mods.deitymanager.DeityManager">
+<SplitPane dividerPositions="0.3" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mod.wurmonline.mods.deitymanager.DeityManagerWindow">
    <items>
-      <ListView fx:id="deitiesList" prefHeight="200.0" prefWidth="200.0" />
+      <VBox prefHeight="200.0" prefWidth="100.0">
+         <children>
+            <ComboBox fx:id="serverSelector" maxWidth="1.7976931348623157E308" prefWidth="150.0" />
+            <ListView fx:id="deitiesList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+         </children>
+      </VBox>
       <VBox>
          <children>
             <ScrollPane fx:id="deityProperties" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />

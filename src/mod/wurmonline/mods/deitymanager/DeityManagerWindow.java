@@ -15,10 +15,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,16 +27,23 @@ public class DeityManagerWindow extends Application {
 
     private static Logger logger = Logger.getLogger(DeityManagerWindow.class.getName());
     private DeityPropertySheet deityPropertySheet;
-    private final ChangeListener<DeityData> listener = (observable, oldValue, newValue) -> deitiesListChanged();
+    private final ChangeListener<DeityData> deitiesListListener = (observable, oldValue, newValue) -> deitiesListChanged();
+    private final ChangeListener<String> serverSelectorListener = (observable, oldValue, newValue) -> serverSelectorChanged();
     private int lastSelectedDeity;
+    private String lastSelectedServer;
     private boolean rebuilding = false;
+
+    private List<String> servers = new ArrayList<>();
 
     @FXML
     ListView<DeityData> deitiesList;
     @FXML
     ScrollPane deityProperties;
+    @FXML
+    ComboBox<String> serverSelector;
 
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
+    //private ResourceBundle messages = ResourceBundle.getBundle("locales/DeityManager", Locale.getDefault());
 
     public static void main(String[] args) {
         launch(args);
@@ -43,13 +51,16 @@ public class DeityManagerWindow extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        messages.getString("button.refresh");
         try {
-            FXMLLoader fx = new FXMLLoader(DeityManager.class.getResource("DeityManager.fxml"), messages);
+            FXMLLoader fx = new FXMLLoader(DeityManagerWindow.class.getResource("DeityManager.fxml"), messages);
             SplitPane pane = fx.load();
-            //??? fx.getController();
+            DeityManagerWindow win = fx.getController();
+            win.initialize();
 
             Scene scene = new Scene(pane);
             primaryStage.setScene(scene);
+            primaryStage.show();
 
         } catch (IOException ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
@@ -58,6 +69,7 @@ public class DeityManagerWindow extends Application {
 
     @FXML
     private void populateDeitiesList() {
+        rebuilding = true;
         rebuilding = true;
 
         deitiesList.getItems().clear();
@@ -102,9 +114,9 @@ public class DeityManagerWindow extends Application {
             if (result.isPresent() && result.get() == ButtonType.YES) {
                 saveDeity();
             }
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     @FXML
@@ -135,6 +147,7 @@ public class DeityManagerWindow extends Application {
 
     @FXML
     public void initialize () {
+        System.out.println("Initialising");
         boolean cancel = saveCheck();
         if (cancel) {
             return;
@@ -145,8 +158,8 @@ public class DeityManagerWindow extends Application {
                 event.consume();
             }
         };
-        deitiesList.getSelectionModel().selectedItemProperty().removeListener(listener);
-        deitiesList.getSelectionModel().selectedItemProperty().addListener(listener);
+        deitiesList.getSelectionModel().selectedItemProperty().removeListener(deitiesListListener);
+        deitiesList.getSelectionModel().selectedItemProperty().addListener(deitiesListListener);
         deitiesList.setCellFactory(new Callback<ListView<DeityData>, ListCell<DeityData>>() {
             @Override
             public ListCell<DeityData> call(ListView<DeityData> param) {
@@ -164,7 +177,10 @@ public class DeityManagerWindow extends Application {
                 return cell;
             }
         });
-        populateDeitiesList();
+        serverSelector.getSelectionModel().selectedItemProperty().removeListener(serverSelectorListener);
+        serverSelector.getSelectionModel().selectedItemProperty().addListener(serverSelectorListener);
+
+        populateServerSelector();
     }
 
     private Optional<ButtonType> showDialog(Alert.AlertType type, String title, String header, String content) {
@@ -185,5 +201,51 @@ public class DeityManagerWindow extends Application {
         alert.setHeaderText(header);
 
         return alert.showAndWait();
+    }
+
+    private void serverSelectorChanged() {
+        // TODO - Rename duplicate?
+        if (!rebuilding) {
+            String selectedServer = serverSelector.getSelectionModel().getSelectedItem();
+            if (selectedServer != null) {
+                lastSelectedServer = selectedServer;
+                //DeityDBInterface.selectServer(selectedServer);
+
+                deityProperties.setContent(null);
+                populateDeitiesList();
+            }
+        }
+    }
+
+    private void populateServerSelector() {
+        // Find gamedir
+        logger.info("Populating server list.");
+        System.out.println("Populating");
+        if (!servers.isEmpty()) {
+            servers = new ArrayList<>();
+        }
+        serverSelector.getItems().clear();
+
+        List<File> folders = new ArrayList<>();
+
+        File folder = new File(".");
+        File[] dirs = folder.listFiles((file1, s) -> new File(file1, s).isDirectory());
+
+        if (dirs != null) {
+            for (File dir : dirs) {
+                String[] result = dir.list((file, name) -> name.equals("gamedir"));
+                if (result != null && result.length > 0) {
+                    servers.add(dir.getName());
+                    serverSelector.getItems().add(dir.getName());
+                }
+            }
+        }
+
+        if (lastSelectedServer == null) {
+            serverSelector.getSelectionModel().selectFirst();
+        }
+        else {
+            serverSelector.getSelectionModel().select(lastSelectedServer);
+        }
     }
 }
