@@ -17,8 +17,6 @@ import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.ResourceBundle;
