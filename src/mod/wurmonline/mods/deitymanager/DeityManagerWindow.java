@@ -1,6 +1,7 @@
 package mod.wurmonline.mods.deitymanager;
 
 import com.ibm.icu.text.MessageFormat;
+import com.wurmonline.server.Constants;
 import com.wurmonline.server.spells.Spells;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -59,7 +60,7 @@ public class DeityManagerWindow {
             fx.setController(this);
             SplitPane pane = fx.load();
 
-            this.initialize();
+            //this.initialize();
 
             Scene scene = new Scene(pane);
             stage = new Stage();
@@ -187,7 +188,9 @@ public class DeityManagerWindow {
         });
         serverSelector.getSelectionModel().selectedItemProperty().removeListener(serverSelectorListener);
         serverSelector.getSelectionModel().selectedItemProperty().addListener(serverSelectorListener);
+        serverSelector.setDisable(true);
 
+        // TODO
         populateServerSelector();
     }
 
@@ -217,7 +220,7 @@ public class DeityManagerWindow {
             String selectedServer = serverSelector.getSelectionModel().getSelectedItem();
             if (selectedServer != null) {
                 lastSelectedServer = selectedServer;
-                //DeityDBInterface.selectServer(selectedServer);
+                // TODO - Select server here.
 
                 deityProperties.setContent(null);
                 populateDeitiesList();

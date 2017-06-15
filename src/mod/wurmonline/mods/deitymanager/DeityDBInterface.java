@@ -44,8 +44,8 @@ public class DeityDBInterface {
         ResultSet drs = null;
         ResultSet srs = null;
 
-        Constants.dbHost = "Adventure_test";
-        DbConnector.initialize();
+        // TODO - Remove.
+        //DbConnector.initialize();
 
         try {
             deityCon = DbConnector.getDeityDbCon();
