@@ -68,9 +68,7 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
             CtClass dbConnector = pool.get("com.wurmonline.server.DbConnector");
 
             pool.get("com.wurmonline.server.database.WurmDatabaseSchema").detach();
-            // TODO - Top one doesn't work locally.
             pool.makeClass(DeityManager.class.getResourceAsStream("WurmDatabaseSchema.class"));
-            //pool.makeClass(Files.newOutputStream(Paths.get("../com.wurmonline.server.database.WurmDatabaseSchema.class")).toString());
 
             CtClass helper = pool.get("com.wurmonline.server.DbConnector$ConfigHelper");
 
@@ -85,14 +83,11 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
             HookManager.getInstance().registerHook("com.wurmonline.server.gui.WurmServerGuiMain", "start", "(Ljavafx/stage/Stage;)V", new InvocationHandlerFactory() {
                 @Override
                 public InvocationHandler createInvocationHandler() {
-                    return new InvocationHandler() {
-                        @Override
-                        public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                            method.invoke(o, objects);
-                            DeityManagerWindow controller = new DeityManagerWindow();
-                            controller.start();
-                            return null;
-                        }
+                    return (o, method1, objects) -> {
+                        method1.invoke(o, objects);
+                        DeityManagerWindow controller = new DeityManagerWindow();
+                        controller.start();
+                        return null;
                     };
                 }
             });

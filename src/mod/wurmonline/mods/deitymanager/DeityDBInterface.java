@@ -44,9 +44,6 @@ public class DeityDBInterface {
         ResultSet drs = null;
         ResultSet srs = null;
 
-        // TODO - Remove.
-        //DbConnector.initialize();
-
         try {
             deityCon = DbConnector.getDeityDbCon();
             deityPS = deityCon.prepareStatement(GET_ALL_DEITIES);
@@ -101,7 +98,7 @@ public class DeityDBInterface {
                 DeityDBInterface.deityData.put(deityName, deity);
             }
         } catch (SQLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
-            logger.log(Level.WARNING, "temp", ex);//messages.getString("failed_to_load"), ex);
+            logger.log(Level.WARNING, messages.getString("failed_to_load"), ex);
         } finally {
             DbUtilities.closeDatabaseObjects(deityPS, drs);
             DbUtilities.closeDatabaseObjects(spellPS, srs);

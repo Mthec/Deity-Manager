@@ -33,7 +33,6 @@ public class DeityManagerWindow {
     private int lastSelectedDeity;
     private String lastSelectedServer;
     private boolean rebuilding = false;
-    public Stage stage;
 
     private List<String> servers = new ArrayList<>();
 
@@ -43,27 +42,21 @@ public class DeityManagerWindow {
     ScrollPane deityProperties;
     @FXML
     ComboBox<String> serverSelector;
-
     @FXML
     Button refreshButton;
-
     @FXML
     Button saveButton;
 
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
-    //private ResourceBundle messages = ResourceBundle.getBundle("locales/DeityManager", Locale.getDefault());
 
     public void start() {
-        messages.getString("button.refresh");
         try {
             FXMLLoader fx = new FXMLLoader(DeityManagerWindow.class.getResource("DeityManager.fxml"), messages);
             fx.setController(this);
             SplitPane pane = fx.load();
-
-            //this.initialize();
-
             Scene scene = new Scene(pane);
-            stage = new Stage();
+            Stage stage = new Stage();
+            stage.setTitle(messages.getString("mod_name"));
             stage.setScene(scene);
 
             refreshButton.setOnAction(event -> initialize());
@@ -78,7 +71,6 @@ public class DeityManagerWindow {
 
     @FXML
     private void populateDeitiesList() {
-        rebuilding = true;
         rebuilding = true;
 
         deitiesList.getItems().clear();
@@ -105,8 +97,6 @@ public class DeityManagerWindow {
             DeityData selectedDeity = deitiesList.getSelectionModel().getSelectedItem();
             if (selectedDeity != null) {
                 lastSelectedDeity = selectedDeity.getNumber();
-                //String name = selectedDeity.getName();
-                //logger.info(MessageFormat.format(messages.getString("selecting"), name));
                 deityPropertySheet = new DeityPropertySheet(selectedDeity, Spells.getAllSpells(), false);
                 deityProperties.setContent(deityPropertySheet);
                 deityPropertySheet.requestFocus();
@@ -155,8 +145,7 @@ public class DeityManagerWindow {
     }
 
     @FXML
-    public void initialize () {
-        System.out.println("Initialising");
+    private void initialize() {
         boolean cancel = saveCheck();
         if (cancel) {
             return;
@@ -194,13 +183,13 @@ public class DeityManagerWindow {
         populateServerSelector();
     }
 
-    private Optional<ButtonType> showDialog(Alert.AlertType type, String title, String header, String content) {
+    private void showDialog(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
 
-        return alert.showAndWait();
+        alert.showAndWait();
     }
 
     private Optional<ButtonType> askYesNo(String title, String header, String content) {
@@ -231,16 +220,12 @@ public class DeityManagerWindow {
     private void populateServerSelector() {
         // Find gamedir
         logger.info("Populating server list.");
-        System.out.println("Populating");
         if (!servers.isEmpty()) {
             servers = new ArrayList<>();
         }
         serverSelector.getItems().clear();
 
-        List<File> folders = new ArrayList<>();
-
-        File folder = new File(".");
-        File[] dirs = folder.listFiles((file1, s) -> new File(file1, s).isDirectory());
+        File[] dirs = new File(".").listFiles((file1, s) -> new File(file1, s).isDirectory());
 
         if (dirs != null) {
             for (File dir : dirs) {

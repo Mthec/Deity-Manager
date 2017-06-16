@@ -18,6 +18,7 @@
     <target name="zip" depends="jar">
         <zip destfile="../deitymanager.zip">
             <zipfileset dir="../out/jar" />
+            <zipfileset file="../icu4j-56_1.jar" />
         </zip>
     </target>
 </project>
