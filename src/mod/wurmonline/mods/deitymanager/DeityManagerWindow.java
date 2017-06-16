@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -24,7 +25,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DeityManagerWindow {
+class DeityManagerWindow {
 
     private static Logger logger = Logger.getLogger(DeityManagerWindow.class.getName());
     private DeityPropertySheet deityPropertySheet;
@@ -33,6 +34,7 @@ public class DeityManagerWindow {
     private int lastSelectedDeity;
     private String lastSelectedServer;
     private boolean rebuilding = false;
+    private DeityManager manager;
 
     private List<String> servers = new ArrayList<>();
 
@@ -46,10 +48,13 @@ public class DeityManagerWindow {
     Button refreshButton;
     @FXML
     Button saveButton;
+    @FXML
+    Button setPowerButton;
 
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
 
-    public void start() {
+    void start(DeityManager manager) {
+        this.manager = manager;
         try {
             FXMLLoader fx = new FXMLLoader(DeityManagerWindow.class.getResource("DeityManager.fxml"), messages);
             fx.setController(this);
@@ -61,6 +66,7 @@ public class DeityManagerWindow {
 
             refreshButton.setOnAction(event -> initialize());
             saveButton.setOnAction(event -> saveDeity());
+            setPowerButton.setOnAction(event -> setDeityPower());
 
             stage.show();
 
@@ -100,12 +106,17 @@ public class DeityManagerWindow {
                 deityPropertySheet = new DeityPropertySheet(selectedDeity, Spells.getAllSpells(), false);
                 deityProperties.setContent(deityPropertySheet);
                 deityPropertySheet.requestFocus();
+                setPowerButton.setDisable(false);
+            }
+            else {
+                setPowerButton.setDisable(true);
             }
         }
     }
 
     private boolean saveCheck() {
         if (deityPropertySheet != null && deityPropertySheet.haveChanges()) {
+            // TODO - Needs to be Yes/No/Cancel?
             Optional<ButtonType> result = askYesNo(messages.getString("changes_title"),
                     messages.getString("changes_header"),
                     messages.getString("changes_message"));
@@ -141,7 +152,43 @@ public class DeityManagerWindow {
                     messages.getString("save_error_header"),
                     MessageFormat.format(messages.getString("save_error_message"), error));
         }
+        manager.applySettingsToServer();
         populateDeitiesList();
+    }
+
+    private void setDeityPower() {
+        DeityData selectedDeity = deitiesList.getSelectionModel().getSelectedItem();
+        if (selectedDeity == null) {
+            // TODO - What to do here?  Should already be disabled?
+            return;
+        }
+
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle(messages.getString("set_power_title"));
+        dialog.setHeaderText(messages.getString("set_power_header"));
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK,
+                                                    ButtonType.CANCEL);
+        GridPane grid = new GridPane();
+        // TODO - Set current.
+        Spinner<Integer> spinner = new Spinner<>();
+        // TODO - What should be max power?  (He's the man...)
+        spinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100));
+        spinner.getValueFactory().setValue(selectedDeity.getPower());
+        grid.add(new Label(messages.getString("power")), 0, 0);
+        grid.add(spinner, 0, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(dialogButton -> {
+                if (dialogButton != ButtonType.CANCEL)
+                    return spinner.getValue();
+                else
+                    return null;
+        });
+
+        Optional<Integer> result = dialog.showAndWait();
+        // TODO - Not actually saving.
+        result.ifPresent(selectedDeity::setPower);
+        deityPropertySheet.updatePower();
     }
 
     @FXML

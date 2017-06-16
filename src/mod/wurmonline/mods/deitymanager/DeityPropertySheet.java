@@ -3,6 +3,7 @@ package mod.wurmonline.mods.deitymanager;
 import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.spells.Spell;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -31,7 +32,7 @@ class DeityPropertySheet extends VBox {
         list.add(new deityItem(DeityPropertyType.NUMBER, deity_category, messages.getString("number"), messages.getString("number_description"), false, deity.getNumber()));
         list.add(new deityItem(DeityPropertyType.ALIGNMENT, deity_category, messages.getString("alignment"), messages.getString("alignment_description"), true, deity.getAlignment()));
         list.add(new deityItem(DeityPropertyType.SEX, deity_category, messages.getString("sex"), messages.getString("sex_description"), !serverRunning, deity.getSex()));
-        list.add(new deityItem(DeityPropertyType.POWER, deity_category, messages.getString("power"), messages.getString("power_description"), true, deity.getPower()));
+        list.add(new deityItem(DeityPropertyType.POWER, deity_category, messages.getString("power"), messages.getString("power_description"), false, deity.getPower()));
         list.add(new deityItem(DeityPropertyType.FAITH, deity_category, messages.getString("faith"), messages.getString("faith_description"), true, deity.getFaith()));
         list.add(new deityItem(DeityPropertyType.HOLYITEM, deity_category, messages.getString("holy_item"), messages.getString("holy_item_description"), !serverRunning, deity.getHolyItem()));
         list.add(new deityItem(DeityPropertyType.FAVOR, deity_category, messages.getString("favor"), messages.getString("favor_description"), true, deity.getFavor()));
@@ -59,6 +60,14 @@ class DeityPropertySheet extends VBox {
 
     DeityData getCurrentData() {
         return currentDeity;
+    }
+
+    // Power is changed via dialog.
+    void updatePower() {
+        // TODO - Magic number?
+        // TODO - Doesn't update displayed number.
+        list.get(4).setValue(currentDeity.getPower());
+        changedProperties.remove(DeityPropertyType.POWER);
     }
 
     final String save() {
@@ -213,8 +222,7 @@ class DeityPropertySheet extends VBox {
 
         @Override
         public Optional<ObservableValue<?>> getObservableValue() {
-            // TODO - Why does this work?
-            return Optional.of(new SimpleBooleanProperty(true));
+            return Optional.of(new SimpleObjectProperty<>(this.value));
         }
     }
 
@@ -288,8 +296,7 @@ class DeityPropertySheet extends VBox {
 
         @Override
         public Optional<ObservableValue<? extends Object>> getObservableValue() {
-            // TODO - Why does this work?
-            return Optional.of(new SimpleBooleanProperty(true));
+            return Optional.of(new SimpleObjectProperty<>(this.value));
         }
     }
 

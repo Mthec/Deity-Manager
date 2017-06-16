@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 public class DeityManager implements WurmServerMod, PreInitable, ServerStartedListener {
     private static Logger logger = Logger.getLogger(DeityManager.class.getName());
     private ResourceBundle messages = LocaleHelper.getBundle("DeityManager");
+    private boolean serverIsRunning;
 
     @Override
     public void preInit() {
@@ -80,13 +81,14 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
                     "return refreshConnectionForSchema(com.wurmonline.server.database.WurmDatabaseSchema.SPELLS);}", dbConnector);
             dbConnector.addMethod(method);
 
+            DeityManager manager = this;
             HookManager.getInstance().registerHook("com.wurmonline.server.gui.WurmServerGuiMain", "start", "(Ljavafx/stage/Stage;)V", new InvocationHandlerFactory() {
                 @Override
                 public InvocationHandler createInvocationHandler() {
                     return (o, method1, objects) -> {
                         method1.invoke(o, objects);
                         DeityManagerWindow controller = new DeityManagerWindow();
-                        controller.start();
+                        controller.start(manager);
                         return null;
                     };
                 }
@@ -107,6 +109,7 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
             for (DeityData deityData : DeityDBInterface.getAllData()) {
                 Deity deity = Deities.getDeity(deityData.getNumber());
                 deity.alignment = deityData.getAlignment();
+                // TODO - This should change naturally.  How to still allow user to change power?
                 deity.setPower((byte)deityData.getPower());
                 ReflectionUtil.setPrivateField(deity, ReflectionUtil.getField(Deity.class, "faith"), deityData.getFaith());
                 deity.setFavor(deityData.getFavor());
@@ -134,6 +137,14 @@ public class DeityManager implements WurmServerMod, PreInitable, ServerStartedLi
         } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("applying_server_settings_error"));
             ex.printStackTrace();
+        }
+        serverIsRunning = true;
+    }
+
+    void applySettingsToServer() {
+        if (serverIsRunning) {
+            // TODO - New version that only updates one deity?
+            onServerStarted();
         }
     }
 }
